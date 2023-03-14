@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Navigation.Scripts
 {
@@ -6,6 +7,7 @@ namespace Navigation.Scripts
     public class SceneScriptableObject : ScriptableObject
     {
         public string sceneName;
+        public SceneEnum sceneEnum;
         public GameObject transitionIn;
         public GameObject transitionOut;
     }

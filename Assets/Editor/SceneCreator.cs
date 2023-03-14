@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using Navigation.Scripts;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -30,15 +31,14 @@ namespace Editor
             if (GUILayout.Button("Create"))
             {
                 FixScenePath();
-
                 CreateDirectoryIfNeeded(_scenePath);
 
+                var fullScenePath = _scenePath + _sceneName + ".unity";
                 EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
-
                 EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+                EditorSceneManager.SaveScene(SceneManager.GetActiveScene(), fullScenePath);
 
-                EditorSceneManager.SaveScene(SceneManager.GetActiveScene(),
-                    _scenePath + _sceneName + ".unity");
+                AddSceneToBuildSettings(fullScenePath);
 
                 var sceneSo = CreateInstance<SceneScriptableObject>();
                 sceneSo.sceneName = _sceneName;
@@ -54,11 +54,6 @@ namespace Editor
 
         private void FixScenePath()
         {
-            if (!_scenePath.Contains("Resources"))
-            {
-                _scenePath += _scenePath.EndsWith("/") ? "Resources/" : "/Resources/";
-            }
-
             if (!_scenePath.StartsWith("Assets/"))
             {
                 _scenePath = "Assets/" + _scenePath;
@@ -68,6 +63,14 @@ namespace Editor
             {
                 _scenePath += "/";
             }
+        }
+
+        private static void AddSceneToBuildSettings(string scenePath)
+        {
+            var currentScenes = EditorBuildSettings.scenes.ToList();
+            var sceneToAdd = new EditorBuildSettingsScene(scenePath, true);
+            currentScenes.Add(sceneToAdd);
+            EditorBuildSettings.scenes = currentScenes.ToArray();
         }
 
         private static void CreateDirectoryIfNeeded(string path)
